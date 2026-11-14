@@ -1,16 +1,26 @@
-const filters = document.querySelector('.catalog-filters');
-const products = document.querySelectorAll('.product[data-category]');
+const filters = [...document.querySelectorAll('[data-filter]')];
+const products = document.querySelectorAll('[data-category]');
 
-filters.addEventListener('click', (event) => {
-  const selected = event.target.closest('button[data-filter]');
-  if (!selected) return;
+function selectCategory() {
+  const category = decodeURIComponent(location.hash.slice(1));
+  const selected = filters.find(button => button.dataset.filter === category) ?? filters[0];
 
-  for (const button of filters.querySelectorAll('button')) {
+  for (const button of filters) {
     button.setAttribute('aria-pressed', String(button === selected));
   }
 
-  const category = selected.dataset.filter;
   for (const product of products) {
-    product.hidden = category !== 'todos' && product.dataset.category !== category;
+    product.hidden = selected.dataset.filter !== 'todos' &&
+      product.dataset.category !== selected.dataset.filter;
   }
-});
+}
+
+for (const button of filters) {
+  button.addEventListener('click', () => {
+    history.replaceState(null, '', '#' + encodeURIComponent(button.dataset.filter));
+    selectCategory();
+  });
+}
+
+window.addEventListener('hashchange', selectCategory);
+selectCategory();
